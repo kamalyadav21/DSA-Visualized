@@ -1,0 +1,6 @@
+LCS Algorithm Visualizer
+The LCS Algorithm Visualizer is a full-stack web application that offers an interactive, step-by-step demonstration of the Longest Common Subsequence (LCS) dynamic programming algorithm. It features a visual matrix interface, a responsive control panel, and smooth animations that help users understand how the algorithm processes two sequences over time.
+
+Built with a modern architecture, the frontend uses React and TypeScript for a fast and responsive interface, styled with Tailwind CSS and shadcn/ui components. The backend is powered by Express.js and TypeScript, with PostgreSQL and Drizzle ORM configured for future extensions like user data persistence. The entire algorithm runs in-browser for real-time performance and visualization, with each computation step reflected live in the matrix grid.
+
+This project is ideal for students, educators, or developers who want a hands-on, visual understanding of dynamic programming through the classic LCS problem.
