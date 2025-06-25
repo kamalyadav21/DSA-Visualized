@@ -1,0 +1,483 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LCS Algorithm Visualizer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'pulse-soft': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'bounce-soft': 'bounce 1s ease-in-out infinite',
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen font-inter">
+    <!-- @COMPONENT: Header -->
+    <header class="bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-200/50 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-gradient-to-r from-blue-500 to-indigo-600 p-2 rounded-xl shadow-lg">
+                        <i class="fas fa-project-diagram text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">LCS Algorithm Visualizer</h1>
+                        <p class="text-sm text-gray-600">Longest Common Subsequence Dynamic Programming</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                        Educational Tool
+                    </span>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- @END_COMPONENT: Header -->
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- @COMPONENT: InputSection -->
+        <div class="mb-8 bg-white rounded-2xl shadow-lg border border-gray-200/50 p-6 animate-fade-in">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <i class="fas fa-keyboard text-blue-500 mr-2"></i>
+                Input Strings
+            </h2>
+            <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">String A</label>
+                    <input 
+                        type="text" 
+                        data-bind="stringA"
+                        value="ABCDGH"
+                        data-mock="true"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-lg font-mono bg-gray-50 hover:bg-white"
+                        placeholder="Enter first string..."
+                        data-implementation="Should update LCS calculation on change"
+                    />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">String B</label>
+                    <input 
+                        type="text" 
+                        data-bind="stringB"
+                        value="AEDFHR"
+                        data-mock="true"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-lg font-mono bg-gray-50 hover:bg-white"
+                        placeholder="Enter second string..."
+                        data-implementation="Should update LCS calculation on change"
+                    />
+                </div>
+            </div>
+            <div class="mt-4 flex items-center justify-between">
+                <div class="text-sm text-gray-600">
+                    <span data-bind="lcsLength" data-mock="true">LCS Length: 3</span> • 
+                    <span data-bind="lcsString" data-mock="true">Result: "ADH"</span>
+                </div>
+                <button 
+                    data-event="click:calculateLCS"
+                    class="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg"
+                    data-implementation="Should recalculate LCS when strings change"
+                >
+                    <i class="fas fa-calculator mr-2"></i>Calculate
+                </button>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: InputSection -->
+
+        <div class="grid lg:grid-cols-4 gap-8">
+            <!-- @COMPONENT: GridVisualizer -->
+            <div class="lg:col-span-3">
+                <div class="bg-white rounded-2xl shadow-lg border border-gray-200/50 p-6 animate-fade-in">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-lg font-semibold text-gray-900 flex items-center">
+                            <i class="fas fa-table text-emerald-500 mr-2"></i>
+                            Dynamic Programming Matrix
+                        </h2>
+                        <div class="flex items-center space-x-4">
+                            <div class="text-sm text-gray-600">
+                                Step <span data-bind="currentStep" data-mock="true">5</span> of <span data-bind="totalSteps" data-mock="true">42</span>
+                            </div>
+                            <div class="w-32 bg-gray-200 rounded-full h-2">
+                                <div class="bg-gradient-to-r from-blue-500 to-indigo-600 h-2 rounded-full transition-all duration-300" style="width: 12%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Matrix Grid -->
+                    <!-- @FUNCTIONALITY: This matrix should display the DP table for LCS algorithm with step-by-step updates -->
+                    <div class="overflow-x-auto">
+                        <div class="inline-block min-w-full">
+                            <!-- Column Headers -->
+                            <div class="flex mb-2">
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold"></div>
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-gray-100 rounded-lg mr-1">ε</div>
+                                <!-- @MAP: stringB.split('').map((char, index) => ( -->
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-blue-100 text-blue-800 rounded-lg mr-1" data-mock="true">A</div>
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-blue-100 text-blue-800 rounded-lg mr-1" data-mock="true">E</div>
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-blue-100 text-blue-800 rounded-lg mr-1" data-mock="true">D</div>
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-blue-100 text-blue-800 rounded-lg mr-1" data-mock="true">F</div>
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-blue-100 text-blue-800 rounded-lg mr-1" data-mock="true">H</div>
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-blue-100 text-blue-800 rounded-lg mr-1" data-mock="true">R</div>
+                                <!-- @END_MAP -->
+                            </div>
+
+                            <!-- Matrix Rows -->
+                            <!-- @MAP: stringA.split('').map((charA, rowIndex) => ( -->
+                            <div class="flex mb-1">
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-emerald-100 text-emerald-800 rounded-lg mr-1" data-mock="true">ε</div>
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-gray-50 border border-gray-200 rounded-lg mr-1 transition-all duration-300 hover:shadow-md" data-mock="true">0</div>
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-gray-50 border border-gray-200 rounded-lg mr-1 transition-all duration-300 hover:shadow-md" data-mock="true">0</div>
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-gray-50 border border-gray-200 rounded-lg mr-1 transition-all duration-300 hover:shadow-md" data-mock="true">0</div>
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-gray-50 border border-gray-200 rounded-lg mr-1 transition-all duration-300 hover:shadow-md" data-mock="true">0</div>
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-gray-50 border border-gray-200 rounded-lg mr-1 transition-all duration-300 hover:shadow-md" data-mock="true">0</div>
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-gray-50 border border-gray-200 rounded-lg mr-1 transition-all duration-300 hover:shadow-md" data-mock="true">0</div>
+                            </div>
+
+                            <div class="flex mb-1">
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-emerald-100 text-emerald-800 rounded-lg mr-1" data-mock="true">A</div>
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-gray-50 border border-gray-200 rounded-lg mr-1 transition-all duration-300 hover:shadow-md" data-mock="true">0</div>
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-gradient-to-r from-green-400 to-emerald-500 text-white rounded-lg mr-1 transition-all duration-300 shadow-lg transform scale-105" data-mock="true">1</div>
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-amber-100 border-2 border-amber-400 rounded-lg mr-1 transition-all duration-300 animate-pulse-soft" data-mock="true">1</div>
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-gray-50 border border-gray-200 rounded-lg mr-1 transition-all duration-300 hover:shadow-md" data-mock="true">1</div>
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-gray-50 border border-gray-200 rounded-lg mr-1 transition-all duration-300 hover:shadow-md" data-mock="true">1</div>
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-gray-50 border border-gray-200 rounded-lg mr-1 transition-all duration-300 hover:shadow-md" data-mock="true">1</div>
+                            </div>
+
+                            <div class="flex mb-1">
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-emerald-100 text-emerald-800 rounded-lg mr-1" data-mock="true">B</div>
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-gray-50 border border-gray-200 rounded-lg mr-1 transition-all duration-300 hover:shadow-md" data-mock="true">0</div>
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-gradient-to-r from-green-400 to-emerald-500 text-white rounded-lg mr-1 transition-all duration-300 shadow-lg" data-mock="true">1</div>
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-gradient-to-r from-green-400 to-emerald-500 text-white rounded-lg mr-1 transition-all duration-300 shadow-lg" data-mock="true">1</div>
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-gray-50 border border-gray-200 rounded-lg mr-1 transition-all duration-300 hover:shadow-md" data-mock="true">1</div>
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-gray-50 border border-gray-200 rounded-lg mr-1 transition-all duration-300 hover:shadow-md" data-mock="true">1</div>
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-gray-50 border border-gray-200 rounded-lg mr-1 transition-all duration-300 hover:shadow-md" data-mock="true">1</div>
+                            </div>
+
+                            <div class="flex mb-1">
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-emerald-100 text-emerald-800 rounded-lg mr-1" data-mock="true">C</div>
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-gray-50 border border-gray-200 rounded-lg mr-1 transition-all duration-300 hover:shadow-md" data-mock="true">0</div>
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-gradient-to-r from-green-400 to-emerald-500 text-white rounded-lg mr-1 transition-all duration-300 shadow-lg" data-mock="true">1</div>
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-gradient-to-r from-green-400 to-emerald-500 text-white rounded-lg mr-1 transition-all duration-300 shadow-lg" data-mock="true">1</div>
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-gray-50 border border-gray-200 rounded-lg mr-1 transition-all duration-300 hover:shadow-md" data-mock="true">1</div>
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-gray-50 border border-gray-200 rounded-lg mr-1 transition-all duration-300 hover:shadow-md" data-mock="true">1</div>
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-gray-50 border border-gray-200 rounded-lg mr-1 transition-all duration-300 hover:shadow-md" data-mock="true">1</div>
+                            </div>
+
+                            <div class="flex mb-1">
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-emerald-100 text-emerald-800 rounded-lg mr-1" data-mock="true">D</div>
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-gray-50 border border-gray-200 rounded-lg mr-1 transition-all duration-300 hover:shadow-md" data-mock="true">0</div>
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-gradient-to-r from-green-400 to-emerald-500 text-white rounded-lg mr-1 transition-all duration-300 shadow-lg" data-mock="true">1</div>
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-gradient-to-r from-green-400 to-emerald-500 text-white rounded-lg mr-1 transition-all duration-300 shadow-lg" data-mock="true">1</div>
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg mr-1 transition-all duration-300 shadow-lg" data-mock="true">2</div>
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-gray-50 border border-gray-200 rounded-lg mr-1 transition-all duration-300 hover:shadow-md" data-mock="true">2</div>
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-gray-50 border border-gray-200 rounded-lg mr-1 transition-all duration-300 hover:shadow-md" data-mock="true">2</div>
+                            </div>
+
+                            <div class="flex mb-1">
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-emerald-100 text-emerald-800 rounded-lg mr-1" data-mock="true">G</div>
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-gray-50 border border-gray-200 rounded-lg mr-1 transition-all duration-300 hover:shadow-md" data-mock="true">0</div>
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-gray-50 border border-gray-200 rounded-lg mr-1 transition-all duration-300 hover:shadow-md" data-mock="true">1</div>
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-gray-50 border border-gray-200 rounded-lg mr-1 transition-all duration-300 hover:shadow-md" data-mock="true">1</div>
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-gray-50 border border-gray-200 rounded-lg mr-1 transition-all duration-300 hover:shadow-md" data-mock="true">2</div>
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-gray-50 border border-gray-200 rounded-lg mr-1 transition-all duration-300 hover:shadow-md" data-mock="true">2</div>
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-gray-50 border border-gray-200 rounded-lg mr-1 transition-all duration-300 hover:shadow-md" data-mock="true">2</div>
+                            </div>
+
+                            <div class="flex mb-1">
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-emerald-100 text-emerald-800 rounded-lg mr-1" data-mock="true">H</div>
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-gray-50 border border-gray-200 rounded-lg mr-1 transition-all duration-300 hover:shadow-md" data-mock="true">0</div>
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-gray-50 border border-gray-200 rounded-lg mr-1 transition-all duration-300 hover:shadow-md" data-mock="true">1</div>
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-gray-50 border border-gray-200 rounded-lg mr-1 transition-all duration-300 hover:shadow-md" data-mock="true">1</div>
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-gray-50 border border-gray-200 rounded-lg mr-1 transition-all duration-300 hover:shadow-md" data-mock="true">2</div>
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-gray-50 border border-gray-200 rounded-lg mr-1 transition-all duration-300 hover:shadow-md" data-mock="true">2</div>
+                                <div class="w-12 h-12 flex items-center justify-center font-mono text-sm font-semibold bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-lg mr-1 transition-all duration-300 shadow-lg" data-mock="true">3</div>
+                            </div>
+                            <!-- @END_MAP -->
+                        </div>
+                    </div>
+
+                    <!-- Legend -->
+                    <div class="mt-6 p-4 bg-gray-50 rounded-xl">
+                        <h3 class="text-sm font-semibold text-gray-900 mb-3">Legend</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-4 h-4 bg-amber-100 border-2 border-amber-400 rounded"></div>
+                                <span class="text-gray-700">Current Cell</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <div class="w-4 h-4 bg-gradient-to-r from-green-400 to-emerald-500 rounded"></div>
+                                <span class="text-gray-700">Match Found</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <div class="w-4 h-4 bg-gradient-to-r from-blue-500 to-indigo-600 rounded"></div>
+                                <span class="text-gray-700">Max Value</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <div class="w-4 h-4 bg-gradient-to-r from-purple-500 to-pink-600 rounded"></div>
+                                <span class="text-gray-700">Final Result</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- @END_COMPONENT: GridVisualizer -->
+
+            <!-- @COMPONENT: ControlPanel -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-2xl shadow-lg border border-gray-200/50 p-6 animate-fade-in sticky top-24">
+                    <h2 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+                        <i class="fas fa-gamepad text-amber-500 mr-2"></i>
+                        Controls
+                    </h2>
+
+                    <!-- Play Controls -->
+                    <div class="space-y-4">
+                        <button 
+                            data-event="click:nextStep"
+                            class="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-4 py-3 rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg flex items-center justify-center font-medium"
+                            data-implementation="Should advance to next step in LCS algorithm"
+                        >
+                            <i class="fas fa-step-forward mr-2"></i>
+                            Next Step
+                        </button>
+
+                        <button 
+                            data-event="click:toggleAutoPlay"
+                            data-bind="autoPlayActive"
+                            class="w-full bg-gradient-to-r from-emerald-500 to-green-600 text-white px-4 py-3 rounded-xl hover:from-emerald-600 hover:to-green-700 transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg flex items-center justify-center font-medium"
+                            data-implementation="Should start/stop auto-play mode"
+                        >
+                            <i class="fas fa-play mr-2"></i>
+                            <span data-mock="true">Auto Play</span>
+                        </button>
+
+                        <button 
+                            data-event="click:reset"
+                            class="w-full bg-gradient-to-r from-amber-500 to-orange-600 text-white px-4 py-3 rounded-xl hover:from-amber-600 hover:to-orange-700 transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg flex items-center justify-center font-medium"
+                            data-implementation="Should reset algorithm to initial state"
+                        >
+                            <i class="fas fa-undo mr-2"></i>
+                            Reset
+                        </button>
+                    </div>
+
+                    <!-- Speed Control -->
+                    <!-- @STATE: playbackSpeed:number = 500 -->
+                    <div class="mt-6 pt-6 border-t border-gray-200">
+                        <label class="block text-sm font-medium text-gray-700 mb-3">Animation Speed</label>
+                        <div class="relative">
+                            <input 
+                                type="range" 
+                                min="100" 
+                                max="2000" 
+                                value="500"
+                                data-bind="playbackSpeed"
+                                class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                                data-implementation="Should control auto-play speed"
+                            />
+                            <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                <span>Fast</span>
+                                <span>Slow</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Algorithm Info -->
+                    <div class="mt-6 pt-6 border-t border-gray-200">
+                        <h3 class="text-sm font-semibold text-gray-900 mb-3">Algorithm Status</h3>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Current Operation:</span>
+                                <span class="font-medium text-blue-600" data-bind="currentOperation" data-mock="true">Compare</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Time Complexity:</span>
+                                <span class="font-mono text-emerald-600">O(m×n)</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Space Complexity:</span>
+                                <span class="font-mono text-emerald-600">O(m×n)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Current Comparison -->
+                    <div class="mt-6 pt-6 border-t border-gray-200">
+                        <h3 class="text-sm font-semibold text-gray-900 mb-3">Current Comparison</h3>
+                        <div class="bg-gray-50 rounded-lg p-3">
+                            <div class="flex items-center justify-center space-x-4 text-lg font-mono">
+                                <span class="bg-emerald-100 text-emerald-800 px-3 py-1 rounded-lg" data-bind="currentCharA" data-mock="true">A</span>
+                                <i class="fas fa-arrows-left-right text-gray-400"></i>
+                                <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-lg" data-bind="currentCharB" data-mock="true">D</span>
+                            </div>
+                            <div class="text-center mt-2 text-sm text-gray-600">
+                                Position: <span data-bind="currentPosition" data-mock="true">(1, 3)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Algorithm Explanation -->
+                <div class="mt-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl shadow-lg border border-blue-200/50 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                        <i class="fas fa-lightbulb text-amber-500 mr-2"></i>
+                        How LCS Works
+                    </h3>
+                    <div class="text-sm text-gray-700 space-y-3">
+                        <p>The Longest Common Subsequence algorithm uses dynamic programming to find the longest sequence that appears in both strings.</p>
+                        <div class="bg-white/70 rounded-lg p-3">
+                            <p class="font-medium mb-2">Algorithm Steps:</p>
+                            <ol class="list-decimal list-inside space-y-1 text-xs">
+                                <li>Create a matrix of size (m+1) × (n+1)</li>
+                                <li>Initialize first row and column to 0</li>
+                                <li>For each cell, compare characters</li>
+                                <li>If match: add 1 to diagonal value</li>
+                                <li>If no match: take maximum of left/top</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- @END_COMPONENT: ControlPanel -->
+        </div>
+
+        <!-- Performance Metrics -->
+        <div class="mt-8 bg-white rounded-2xl shadow-lg border border-gray-200/50 p-6 animate-fade-in">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <i class="fas fa-chart-line text-purple-500 mr-2"></i>
+                Performance Metrics
+            </h2>
+            <div class="grid md:grid-cols-4 gap-6">
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-200/50">
+                    <div class="flex items-center space-x-3">
+                        <div class="bg-blue-500 p-2 rounded-lg">
+                            <i class="fas fa-clock text-white text-sm"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">Execution Time</p>
+                            <p class="text-lg font-bold text-blue-600" data-bind="executionTime" data-mock="true">1.2ms</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl p-4 border border-emerald-200/50">
+                    <div class="flex items-center space-x-3">
+                        <div class="bg-emerald-500 p-2 rounded-lg">
+                            <i class="fas fa-memory text-white text-sm"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">Memory Used</p>
+                            <p class="text-lg font-bold text-emerald-600" data-bind="memoryUsed" data-mock="true">42 cells</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-4 border border-amber-200/50">
+                    <div class="flex items-center space-x-3">
+                        <div class="bg-amber-500 p-2 rounded-lg">
+                            <i class="fas fa-calculator text-white text-sm"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">Comparisons</p>
+                            <p class="text-lg font-bold text-amber-600" data-bind="totalComparisons" data-mock="true">36</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-4 border border-purple-200/50">
+                    <div class="flex items-center space-x-3">
+                        <div class="bg-purple-500 p-2 rounded-lg">
+                            <i class="fas fa-percentage text-white text-sm"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">Similarity</p>
+                            <p class="text-lg font-bold text-purple-600" data-bind="similarity" data-mock="true">50%</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white/80 backdrop-blur-md border-t border-gray-200/50 mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="text-center">
+                <p class="text-gray-600 text-sm">
+                    Built with <i class="fas fa-heart text-red-500"></i> using Vite + React + Tailwind CSS
+                </p>
+                <p class="text-gray-500 text-xs mt-2">
+                    Educational tool for understanding dynamic programming algorithms
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+    // TODO: Implement LCS algorithm logic, step-by-step visualization, and React component interactions
+    // This mockup demonstrates the UI structure and styling
+    
+    (function() {
+        // Mock interaction for demonstration
+        let isAutoPlaying = false;
+        let currentStep = 5;
+        const totalSteps = 42;
+        
+        // TODO: Replace with actual React state management
+        function updateStepDisplay() {
+            // Update progress bar and step counter
+            const progressBar = document.querySelector('.bg-gradient-to-r.from-blue-500.to-indigo-600.h-2');
+            if (progressBar) {
+                const percentage = (currentStep / totalSteps) * 100;
+                progressBar.style.width = `${percentage}%`;
+            }
+        }
+        
+        // TODO: Implement actual LCS algorithm and matrix visualization
+        function simulateMatrixUpdate() {
+            // This would update the matrix cells based on algorithm steps
+            console.log('Matrix update simulation - step:', currentStep);
+        }
+        
+        updateStepDisplay();
+    })();
+    </script>
+
+    <style>
+    .slider::-webkit-slider-thumb {
+        appearance: none;
+        height: 20px;
+        width: 20px;
+        border-radius: 50%;
+        background: #3B82F6;
+        cursor: pointer;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    .slider::-moz-range-thumb {
+        height: 20px;
+        width: 20px;
+        border-radius: 50%;
+        background: #3B82F6;
+        cursor: pointer;
+        border: none;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    </style>
+</body>
+</html>

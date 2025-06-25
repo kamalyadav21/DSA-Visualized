@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LCS Algorithm Visualizer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'fade-in': 'fadeIn 0.3s ease-in-out',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+</head>
+<body class="bg-slate-50 font-inter">
+    <!-- @COMPONENT: App [main application container] -->
+    <div class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+        <!-- Header -->
+        <!-- @COMPONENT: Header [application title and description] -->
+        <header class="bg-white shadow-sm border-b border-slate-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-3xl font-bold text-slate-900">LCS Algorithm Visualizer</h1>
+                        <p class="text-slate-600 mt-1">Visualize the Longest Common Subsequence dynamic programming algorithm</p>
+                    </div>
+                    <div class="flex items-center space-x-2 text-sm text-slate-500">
+                        <i class="fas fa-code"></i>
+                        <span>Vite + React + Tailwind</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <!-- @END_COMPONENT: Header -->
+
+        <!-- Main Content -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="grid grid-cols-1 xl:grid-cols-4 gap-8">
+                
+                <!-- Control Panel Sidebar -->
+                <!-- @COMPONENT: ControlPanel [algorithm controls and inputs] -->
+                <div class="xl:col-span-1">
+                    <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6 sticky top-8">
+                        <h2 class="text-lg font-semibold text-slate-900 mb-4 flex items-center">
+                            <i class="fas fa-sliders-h text-blue-500 mr-2"></i>
+                            Controls
+                        </h2>
+                        
+                        <!-- Input Strings -->
+                        <div class="space-y-4 mb-6">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-2">String 1</label>
+                                <input 
+                                    type="text" 
+                                    data-bind="string1"
+                                    data-mock="true"
+                                    value="ABCDGH"
+                                    class="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
+                                    placeholder="Enter first string"
+                                >
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-2">String 2</label>
+                                <input 
+                                    type="text" 
+                                    data-bind="string2"
+                                    data-mock="true"
+                                    value="AEDFHR"
+                                    class="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
+                                    placeholder="Enter second string"
+                                >
+                            </div>
+                        </div>
+
+                        <!-- Playback Controls -->
+                        <div class="space-y-4 mb-6">
+                            <div class="flex space-x-2">
+                                <button 
+                                    data-event="click:handleReset"
+                                    class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-md transition-colors duration-200 flex items-center justify-center"
+                                >
+                                    <i class="fas fa-undo mr-2"></i>
+                                    Reset
+                                </button>
+                                <button 
+                                    data-event="click:handleNext"
+                                    class="flex-1 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors duration-200 flex items-center justify-center"
+                                >
+                                    <i class="fas fa-step-forward mr-2"></i>
+                                    Next
+                                </button>
+                            </div>
+                            <button 
+                                data-event="click:handleAutoPlay"
+                                data-bind="isAutoPlaying ? 'Pause' : 'Auto Play'"
+                                class="w-full bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-3 rounded-md transition-colors duration-200 flex items-center justify-center font-medium"
+                            >
+                                <i class="fas fa-play mr-2" data-mock="true"></i>
+                                <span data-mock="true">Auto Play</span>
+                            </button>
+                        </div>
+
+                        <!-- Algorithm Status -->
+                        <!-- @STATE: currentStep:number = 0, totalSteps:number = 42 -->
+                        <div class="border-t border-slate-200 pt-4">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm font-medium text-slate-700">Progress</span>
+                                <span class="text-sm text-slate-500" data-bind="`${currentStep}/${totalSteps}`" data-mock="true">5/42</span>
+                            </div>
+                            <div class="w-full bg-slate-200 rounded-full h-2">
+                                <div 
+                                    class="bg-blue-500 h-2 rounded-full transition-all duration-300" 
+                                    style="width: 12%" 
+                                    data-bind="(currentStep/totalSteps)*100 + '%'"
+                                    data-mock="true"
+                                ></div>
+                            </div>
+                            <div class="mt-3 text-sm text-slate-600">
+                                <div class="flex items-center">
+                                    <div class="w-3 h-3 bg-amber-400 rounded-sm mr-2"></div>
+                                    <span>Current Cell</span>
+                                </div>
+                                <div class="flex items-center mt-1">
+                                    <div class="w-3 h-3 bg-emerald-400 rounded-sm mr-2"></div>
+                                    <span>Completed</span>
+                                </div>
+                                <div class="flex items-center mt-1">
+                                    <div class="w-3 h-3 bg-slate-200 border border-slate-300 rounded-sm mr-2"></div>
+                                    <span>Pending</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Current LCS Info -->
+                        <div class="border-t border-slate-200 pt-4 mt-4">
+                            <h3 class="text-sm font-medium text-slate-700 mb-2">Current LCS Length</h3>
+                            <div class="text-2xl font-bold text-blue-600" data-bind="currentLCSLength" data-mock="true">3</div>
+                            <div class="text-sm text-slate-500 mt-1" data-bind="currentLCS" data-mock="true">ADH</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: ControlPanel -->
+
+                <!-- Matrix Visualization -->
+                <!-- @COMPONENT: GridVisualizer [DP matrix visualization] -->
+                <div class="xl:col-span-3">
+                    <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-lg font-semibold text-slate-900 flex items-center">
+                                <i class="fas fa-th text-blue-500 mr-2"></i>
+                                DP Matrix Visualization
+                            </h2>
+                            <div class="text-sm text-slate-500">
+                                <span data-bind="currentPosition" data-mock="true">Row: 2, Col: 3</span>
+                            </div>
+                        </div>
+
+                        <!-- Algorithm Explanation -->
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                            <h3 class="text-sm font-semibold text-blue-900 mb-2">Current Step</h3>
+                            <p class="text-sm text-blue-800" data-bind="currentStepDescription" data-mock="true">
+                                Comparing 'C' and 'D': Characters don't match. Taking maximum of left (2) and top (1) cells. Result: 2
+                            </p>
+                        </div>
+
+                        <!-- Matrix Grid -->
+                        <div class="overflow-x-auto">
+                            <div class="inline-block min-w-full">
+                                <!-- Column Headers -->
+                                <div class="flex mb-1">
+                                    <div class="w-12 h-12 flex items-center justify-center font-medium text-slate-600 border-r border-slate-200"></div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-medium text-slate-600 bg-slate-50 border border-slate-200">∅</div>
+                                    <!-- @MAP: string2.split('').map((char, index) => ( -->
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono font-medium text-slate-900 bg-slate-50 border border-slate-200" data-mock="true">A</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono font-medium text-slate-900 bg-slate-50 border border-slate-200" data-mock="true">E</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono font-medium text-slate-900 bg-slate-50 border border-slate-200" data-mock="true">D</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono font-medium text-slate-900 bg-slate-50 border border-slate-200" data-mock="true">F</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono font-medium text-slate-900 bg-slate-50 border border-slate-200" data-mock="true">H</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono font-medium text-slate-900 bg-slate-50 border border-slate-200" data-mock="true">R</div>
+                                    <!-- @END_MAP )) -->
+                                </div>
+
+                                <!-- Matrix Rows -->
+                                <!-- Row 0 (empty string) -->
+                                <div class="flex mb-1">
+                                    <div class="w-12 h-12 flex items-center justify-center font-medium text-slate-600 bg-slate-50 border border-slate-200">∅</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono text-slate-700 bg-emerald-100 border border-emerald-200" data-mock="true">0</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono text-slate-700 bg-emerald-100 border border-emerald-200" data-mock="true">0</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono text-slate-700 bg-emerald-100 border border-emerald-200" data-mock="true">0</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono text-slate-700 bg-emerald-100 border border-emerald-200" data-mock="true">0</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono text-slate-700 bg-emerald-100 border border-emerald-200" data-mock="true">0</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono text-slate-700 bg-emerald-100 border border-emerald-200" data-mock="true">0</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono text-slate-700 bg-emerald-100 border border-emerald-200" data-mock="true">0</div>
+                                </div>
+
+                                <!-- Row 1 (A) -->
+                                <div class="flex mb-1">
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono font-medium text-slate-900 bg-slate-50 border border-slate-200" data-mock="true">A</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono text-slate-700 bg-emerald-100 border border-emerald-200" data-mock="true">0</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono text-slate-700 bg-emerald-100 border border-emerald-200" data-mock="true">1</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono text-slate-700 bg-emerald-100 border border-emerald-200" data-mock="true">1</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono text-slate-700 bg-emerald-100 border border-emerald-200" data-mock="true">1</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono text-slate-700 bg-emerald-100 border border-emerald-200" data-mock="true">1</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono text-slate-700 bg-emerald-100 border border-emerald-200" data-mock="true">1</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono text-slate-700 bg-emerald-100 border border-emerald-200" data-mock="true">1</div>
+                                </div>
+
+                                <!-- Row 2 (B) -->
+                                <div class="flex mb-1">
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono font-medium text-slate-900 bg-slate-50 border border-slate-200" data-mock="true">B</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono text-slate-700 bg-emerald-100 border border-emerald-200" data-mock="true">0</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono text-slate-700 bg-emerald-100 border border-emerald-200" data-mock="true">1</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono text-slate-700 bg-emerald-100 border border-emerald-200" data-mock="true">1</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono text-slate-700 bg-emerald-100 border border-emerald-200" data-mock="true">1</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono text-slate-700 bg-emerald-100 border border-emerald-200" data-mock="true">1</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono text-slate-700 bg-emerald-100 border border-emerald-200" data-mock="true">1</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono text-slate-700 bg-emerald-100 border border-emerald-200" data-mock="true">1</div>
+                                </div>
+
+                                <!-- Row 3 (C) - Current row being processed -->
+                                <div class="flex mb-1">
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono font-medium text-slate-900 bg-slate-50 border border-slate-200" data-mock="true">C</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono text-slate-700 bg-emerald-100 border border-emerald-200" data-mock="true">0</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono text-slate-700 bg-emerald-100 border border-emerald-200" data-mock="true">1</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono text-slate-700 bg-emerald-100 border border-emerald-200" data-mock="true">1</div>
+                                    <!-- Current cell being processed -->
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono font-bold text-white bg-amber-400 border-2 border-amber-500 animate-pulse-slow" data-mock="true">2</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono text-slate-400 bg-slate-100 border border-slate-300" data-mock="true">?</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono text-slate-400 bg-slate-100 border border-slate-300" data-mock="true">?</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono text-slate-400 bg-slate-100 border border-slate-300" data-mock="true">?</div>
+                                </div>
+
+                                <!-- Remaining rows -->
+                                <!-- @MAP: remainingRows.map((row, rowIndex) => ( -->
+                                <div class="flex mb-1" data-mock="true">
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono font-medium text-slate-900 bg-slate-50 border border-slate-200">D</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono text-slate-400 bg-slate-100 border border-slate-300">?</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono text-slate-400 bg-slate-100 border border-slate-300">?</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono text-slate-400 bg-slate-100 border border-slate-300">?</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono text-slate-400 bg-slate-100 border border-slate-300">?</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono text-slate-400 bg-slate-100 border border-slate-300">?</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono text-slate-400 bg-slate-100 border border-slate-300">?</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono text-slate-400 bg-slate-100 border border-slate-300">?</div>
+                                </div>
+                                <div class="flex mb-1" data-mock="true">
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono font-medium text-slate-900 bg-slate-50 border border-slate-200">G</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono text-slate-400 bg-slate-100 border border-slate-300">?</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono text-slate-400 bg-slate-100 border border-slate-300">?</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono text-slate-400 bg-slate-100 border border-slate-300">?</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono text-slate-400 bg-slate-100 border border-slate-300">?</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono text-slate-400 bg-slate-100 border border-slate-300">?</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono text-slate-400 bg-slate-100 border border-slate-300">?</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono text-slate-400 bg-slate-100 border border-slate-300">?</div>
+                                </div>
+                                <div class="flex mb-1" data-mock="true">
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono font-medium text-slate-900 bg-slate-50 border border-slate-200">H</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono text-slate-400 bg-slate-100 border border-slate-300">?</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono text-slate-400 bg-slate-100 border border-slate-300">?</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono text-slate-400 bg-slate-100 border border-slate-300">?</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono text-slate-400 bg-slate-100 border border-slate-300">?</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono text-slate-400 bg-slate-100 border border-slate-300">?</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono text-slate-400 bg-slate-100 border border-slate-300">?</div>
+                                    <div class="w-12 h-12 flex items-center justify-center font-mono text-slate-400 bg-slate-100 border border-slate-300">?</div>
+                                </div>
+                                <!-- @END_MAP )) -->
+                            </div>
+                        </div>
+
+                        <!-- Algorithm Details -->
+                        <div class="mt-6 bg-slate-50 rounded-lg p-4">
+                            <h3 class="text-sm font-semibold text-slate-900 mb-3">Algorithm Logic</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <h4 class="font-medium text-slate-700 mb-2">If characters match:</h4>
+                                    <code class="bg-white px-2 py-1 rounded text-emerald-600 border">dp[i][j] = dp[i-1][j-1] + 1</code>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-slate-700 mb-2">If characters don't match:</h4>
+                                    <code class="bg-white px-2 py-1 rounded text-blue-600 border">dp[i][j] = max(dp[i-1][j], dp[i][j-1])</code>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: GridVisualizer -->
+            </div>
+
+            <!-- Results Section -->
+            <!-- @COMPONENT: ResultsDisplay [final LCS results] -->
+            <div class="mt-8 bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+                <h2 class="text-lg font-semibold text-slate-900 mb-4 flex items-center">
+                    <i class="fas fa-trophy text-amber-500 mr-2"></i>
+                    Final Results
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-blue-600" data-bind="finalLCSLength" data-mock="true">3</div>
+                        <div class="text-sm text-slate-600 mt-1">LCS Length</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-lg font-mono font-semibold text-emerald-600" data-bind="finalLCS" data-mock="true">ADH</div>
+                        <div class="text-sm text-slate-600 mt-1">Longest Common Subsequence</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-slate-600" data-bind="totalOperations" data-mock="true">42</div>
+                        <div class="text-sm text-slate-600 mt-1">Total Operations</div>
+                    </div>
+                </div>
+            </div>
+            <!-- @END_COMPONENT: ResultsDisplay -->
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-white border-t border-slate-200 mt-12">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                <div class="flex items-center justify-between text-sm text-slate-500">
+                    <div>Built with Vite + React + Tailwind CSS</div>
+                    <div class="flex items-center space-x-4">
+                        <span>© 2024 LCS Visualizer</span>
+                        <div class="flex items-center space-x-1">
+                            <i class="fas fa-clock"></i>
+                            <span>Real-time Algorithm Visualization</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+    <!-- @END_COMPONENT: App -->
+
+    <script>
+        // Mock interactivity for demonstration
+        (function() {
+            // TODO: Implement LCS algorithm step-by-step execution
+            // TODO: Implement state management for matrix updates
+            // TODO: Implement auto-play functionality with timers
+            // TODO: Connect to actual React components and hooks
+            
+            let currentStep = 0;
+            let isAutoPlaying = false;
+            let autoPlayInterval;
+
+            // Mock button event handlers
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('[data-event*="handleNext"]')) {
+                    // TODO: Advance algorithm by one step
+                    currentStep++;
+                    console.log('Next step:', currentStep);
+                }
+                
+                if (e.target.closest('[data-event*="handleReset"]')) {
+                    // TODO: Reset algorithm to initial state
+                    currentStep = 0;
+                    console.log('Algorithm reset');
+                }
+                
+                if (e.target.closest('[data-event*="handleAutoPlay"]')) {
+                    // TODO: Toggle auto-play mode
+                    isAutoPlaying = !isAutoPlaying;
+                    console.log('Auto play:', isAutoPlaying ? 'started' : 'stopped');
+                }
+            });
+
+            // Mock input change handlers
+            document.addEventListener('input', function(e) {
+                if (e.target.matches('[data-bind="string1"], [data-bind="string2"]')) {
+                    // TODO: Recalculate LCS matrix when inputs change
+                    console.log('Input changed:', e.target.value);
+                }
+            });
+        })();
+    </script>
+</body>
+</html>
